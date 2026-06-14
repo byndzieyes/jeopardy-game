@@ -141,10 +141,10 @@ function App() {
           </div>
         </div>
 
-        <div className="relative h-14 mt-2">
+        <div className="relative h-16 mt-8">
           <button
             type="submit"
-            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
+            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
               role === 'player' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
           >
@@ -153,7 +153,7 @@ function App() {
 
           <button
             type="submit"
-            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
+            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
               role === 'host' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
           >
