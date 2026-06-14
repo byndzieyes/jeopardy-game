@@ -74,12 +74,19 @@ function App() {
           <label className="block text-md font-semibold uppercase tracking-wider text-gray-300 mb-2">
             Хто ти сьогодні?
           </label>
-          <div className="flex gap-3 rounded-sm bg-brand-input p-2">
+
+          <div className="relative flex rounded-sm bg-brand-input p-1.5 overflow-hidden border border-white/5">
+            <div
+              className={`absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-6px)] rounded-sm bg-brand-primary shadow-md transition-transform duration-300 ease-out ${
+                role === 'host' ? 'translate-x-full' : 'translate-x-0'
+              }`}
+            />
+
             <button
               type="button"
               onClick={() => setRole('player')}
-              className={`flex-1 rounded-sm py-2 font-bold text-sm tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${
-                role === 'player' ? 'bg-brand-primary text-white shadow-md' : 'text-gray-400 hover:text-white'
+              className={`z-10 flex-1 rounded-sm py-2.5 font-bold text-sm tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                role === 'player' ? 'text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               <Gamepad2 className="w-5 h-5" />
@@ -89,8 +96,8 @@ function App() {
             <button
               type="button"
               onClick={() => setRole('host')}
-              className={`flex-1 rounded-sm py-2.5 font-bold text-sm tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${
-                role === 'host' ? 'bg-brand-primary text-white shadow-md' : 'text-gray-400 hover:text-white'
+              className={`z-10 flex-1 rounded-sm py-2.5 font-bold text-sm tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                role === 'host' ? 'text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               <Crown className="w-5 h-5" />
