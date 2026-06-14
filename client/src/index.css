@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Roboto Condensed', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+
+  --color-brand-bg: #0f162e;
+  --color-brand-surface: #091048;
+  --color-brand-input: #2b3a67;
+  --color-brand-primary: #da9100;
+  --color-brand-accent: #fec672;
+}
