@@ -9,7 +9,7 @@ function App() {
   const [roomCode, setRoomCode] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim()) return alert('Введи своє ім’я!');
     if (role === 'player' && !roomCode.trim()) return alert('Введи код кімнати!');
@@ -106,28 +106,60 @@ function App() {
           </div>
         </div>
 
-        <div
-          className={`overflow-hidden transition-all duration-300 ${
-            role === 'player' ? 'max-h-28 opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0'
-          }`}
-        >
-          <label className="block text-md font-semibold uppercase tracking-wider text-gray-300 mb-2">Код кімнати</label>
-          <input
-            type="text"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-            placeholder="XF4G"
-            maxLength={4}
-            className="w-full rounded-sm bg-brand-input px-4 py-3 text-center text-2xl font-mono font-black tracking-widest text-brand-accent outline-none border border-transparent focus:border-brand-accent transition-all duration-200"
-          />
+        <div className="relative h-24 mb-6">
+          <div
+            className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
+              role === 'player' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <label className="block text-md font-semibold uppercase tracking-wider text-gray-300 mb-2">
+              Код кімнати
+            </label>
+            <input
+              type="text"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              placeholder="XF4G"
+              maxLength={4}
+              className="w-full h-14 rounded-sm bg-brand-input px-4 text-center text-2xl font-mono font-black tracking-widest text-brand-accent outline-none border border-transparent focus:border-brand-accent transition-all duration-200"
+            />
+          </div>
+
+          <div
+            className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
+              role === 'host' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <label className="block text-md font-semibold uppercase tracking-wider text-gray-300 mb-2">Опції гри</label>
+            <button
+              type="button"
+              // onClick={() => setIsConfiguring(true)}
+              className="w-full h-14 rounded-sm bg-brand-input px-4 text-xl text-center font-bold text-brand-accent border border-brand-accent/20 hover:bg-brand-input/80 transition-all duration-200 cursor-pointer"
+            >
+              НАЛАШТУВАТИ ПРЕСЕТ
+            </button>
+          </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full rounded-sm bg-brand-primary py-4 text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-200 cursor-pointer"
-        >
-          {role === 'host' ? 'Створити кімнату' : 'Приєднатися до гри'}
-        </button>
+        <div className="relative h-14 mt-2">
+          <button
+            type="submit"
+            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
+              role === 'player' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            Приєднатися до гри
+          </button>
+
+          <button
+            type="submit"
+            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
+              role === 'host' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            Створити кімнату
+          </button>
+        </div>
       </form>
     </div>
   );
