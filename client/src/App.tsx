@@ -4,7 +4,9 @@ import { Crown, Gamepad2 } from 'lucide-react';
 type UserRole = 'player' | 'host';
 
 function App() {
-  const [name, setName] = useState<string>('');
+  const [name, setName] = useState<string>(() => {
+    return localStorage.getItem('jeopardy_username') || '';
+  });
   const [role, setRole] = useState<UserRole>('player');
   const [roomCode, setRoomCode] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
@@ -13,6 +15,8 @@ function App() {
     e.preventDefault();
     if (!name.trim()) return alert('Введи своє ім’я!');
     if (role === 'player' && !roomCode.trim()) return alert('Введи код кімнати!');
+
+    localStorage.setItem('jeopardy_username', name.trim());
 
     setIsSubmitted(true);
   };
