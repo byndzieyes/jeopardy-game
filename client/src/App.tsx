@@ -42,7 +42,7 @@ function App() {
 
           <button
             onClick={() => setIsSubmitted(false)}
-            className="w-full rounded-sm mt-3 bg-red-600/10 border border-red-500/30 py-3 font-bold text-red-400 hover:bg-red-600/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+            className="w-full rounded-sm mt-3 bg-red-600/10 border border-red-500/30 py-3 font-bold text-red-400 hover:bg-red-600/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             ВИЙТИ З КІМНАТИ
           </button>
@@ -70,7 +70,7 @@ function App() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Наприклад, Владислав"
-            className="w-full rounded-sm bg-brand-input px-4 py-3 text-white placeholder-gray-500 outline-none border border-transparent focus:border-brand-accent transition-all duration-200"
+            className="w-full rounded-sm bg-brand-input px-4 py-3 text-white placeholder-gray-500 outline-none border border-white/5 focus:border-brand-accent transition-all duration-200"
           />
         </div>
 
@@ -125,7 +125,7 @@ function App() {
               onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
               placeholder="XF4G"
               maxLength={4}
-              className="w-full h-14 rounded-sm bg-brand-input px-4 text-center text-2xl font-mono font-black tracking-widest text-brand-accent outline-none border border-transparent focus:border-brand-accent transition-all duration-200"
+              className="w-full h-14 rounded-sm bg-brand-input px-4 text-center text-2xl font-mono font-black tracking-widest text-brand-accent outline-none border border-white/5 focus:border-brand-accent transition-all duration-200"
             />
           </div>
 
@@ -138,7 +138,7 @@ function App() {
             <button
               type="button"
               // onClick={() => setIsConfiguring(true)}
-              className="w-full h-14 rounded-sm bg-brand-input px-4 text-xl text-center font-bold text-brand-accent border border-brand-accent/20 hover:bg-brand-input/80 transition-all duration-200 cursor-pointer"
+              className="w-full h-14 rounded-sm bg-brand-input px-4 text-xl text-center font-bold text-brand-accent border border-brand-accent/20 hover:bg-brand-input/80 hover:border-brand-accent hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
             >
               НАЛАШТУВАТИ ПРЕСЕТ
             </button>
@@ -148,7 +148,7 @@ function App() {
         <div className="relative h-16 mt-8">
           <button
             type="submit"
-            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
+            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
               role === 'player' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
           >
@@ -157,7 +157,7 @@ function App() {
 
           <button
             type="submit"
-            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
+            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
               role === 'host' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
           >
