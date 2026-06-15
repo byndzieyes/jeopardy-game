@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Crown, Gamepad2 } from 'lucide-react';
+import { socket } from './socket';
 
 type UserRole = 'player' | 'host';
 
@@ -11,38 +12,66 @@ function App() {
   const [roomCode, setRoomCode] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
+  useEffect(() => {
+    socket.on('room_created', (generatedCode: string) => {
+      setRoomCode(generatedCode);
+      setIsSubmitted(true);
+    });
+
+    socket.on('error', (message: string) => {
+      alert(message);
+    });
+
+    return () => {
+      socket.off('room_created');
+      socket.off('error');
+    };
+  }, []);
+
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim()) return alert('Введи своє ім’я!');
-    if (role === 'player' && !roomCode.trim()) return alert('Введи код кімнати!');
+
+    if (role === 'host') {
+      socket.emit('create_room', { username: name.trim() });
+    } else {
+      if (!roomCode.trim()) return alert('Введи код кімнати!');
+
+      socket.emit('join_room', { username: name.trim(), roomCode: roomCode.trim().toUpperCase() });
+
+      setIsSubmitted(true);
+    }
 
     localStorage.setItem('jeopardy_username', name.trim());
+  };
 
-    setIsSubmitted(true);
+  const handleLeaveRoom = () => {
+    socket.emit('leave_room', { username: name.trim(), roomCode: roomCode.trim().toUpperCase() });
+
+    setIsSubmitted(false);
+    setRoomCode('');
   };
 
   if (isSubmitted) {
     return (
       <div className="flex h-screen items-center justify-center bg-brand-bg text-white p-4 font-sans">
         <div className="w-full max-w-md rounded-sm bg-brand-surface p-8 text-center shadow-2xl border border-white/5">
-          <h2 className="text-3xl font-bold mb-3 text-brand-accent">Вітаємо, {name}!</h2>
-          <p className="text-gray-300 mb-3 text-lg">
+          <h2 className="text-5xl font-bold mb-8 text-brand-accent">Вітаємо, {name}!</h2>
+          <p className="text-gray-300 mb-3 text-xl">
             Ти увійшов як:{' '}
             <span className="font-bold uppercase tracking-wider text-white">
               {role === 'host' ? 'Хост' : 'Гравець'}
             </span>
           </p>
 
-          {role === 'player' && (
-            <div className="mb-6 rounded-sm bg-brand-input p-4 border border-brand-accent/20">
-              <span className="block text-xs uppercase tracking-widest text-gray-400 mb-1">Код кімнати</span>
-              <span className="text-3xl font-mono font-black tracking-widest text-brand-accent">{roomCode}</span>
-            </div>
-          )}
+          <div className="mb-6 rounded-sm bg-brand-input p-4 border border-brand-accent/20">
+            <span className="block text-md uppercase tracking-widest text-gray-400 mb-1">Код кімнати</span>
+            <span className="text-3xl font-mono font-black tracking-widest text-brand-accent">{roomCode}</span>
+          </div>
 
           <button
-            onClick={() => setIsSubmitted(false)}
-            className="w-full rounded-sm mt-3 bg-red-600/10 border border-red-500/30 py-3 font-bold text-red-400 hover:bg-red-600/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+            onClick={handleLeaveRoom}
+            className="w-full rounded-sm mt-3 bg-red-600/10 border border-red-500/30 py-3 text-xl font-bold text-red-400 hover:bg-red-600/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             ВИЙТИ З КІМНАТИ
           </button>
