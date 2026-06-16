@@ -1,55 +1,104 @@
 import { useEffect, useState } from 'react';
 import { Crown, Gamepad2 } from 'lucide-react';
 import { socket } from './socket';
+import { getOrCreateUserId } from './utils/user';
 
 type UserRole = 'player' | 'host';
 
 function App() {
+  const [userId] = useState<string>(() => getOrCreateUserId());
   const [name, setName] = useState<string>(() => {
     return localStorage.getItem('jeopardy_username') || '';
   });
-  const [role, setRole] = useState<UserRole>('player');
-  const [roomCode, setRoomCode] = useState<string>('');
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [role, setRole] = useState<UserRole>(() => {
+    return (sessionStorage.getItem('jeopardy_role') as UserRole) || 'player';
+  });
+  const [roomCode, setRoomCode] = useState<string>(() => {
+    return sessionStorage.getItem('jeopardy_roomcode') || '';
+  });
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(() => {
+    const savedRole = sessionStorage.getItem('jeopardy_role');
+    const savedCode = sessionStorage.getItem('jeopardy_roomcode');
+    const savedName = localStorage.getItem('jeopardy_username');
+    return !!(savedRole && savedCode && savedName);
+  });
 
   useEffect(() => {
     socket.on('room_created', (generatedCode: string) => {
       setRoomCode(generatedCode);
       setIsSubmitted(true);
+
+      sessionStorage.setItem('jeopardy_role', 'host');
+      sessionStorage.setItem('jeopardy_roomcode', generatedCode);
     });
 
-    socket.on('error', (message: string) => {
+    socket.on('room_joined_success', ({ isActive, roomCode: serverCode, role: serverRole }) => {
+      console.log(`Successfully joined room ${serverCode} as ${serverRole}. Game active: ${isActive}`);
+
+      setIsSubmitted(true);
+
+      sessionStorage.setItem('jeopardy_role', serverRole);
+      sessionStorage.setItem('jeopardy_roomcode', serverCode);
+
+      if (isActive) {
+        // setIsGameStarted(true);
+      }
+    });
+
+    socket.on('error_message', (message: string) => {
       alert(message);
+      sessionStorage.removeItem('jeopardy_role');
+      sessionStorage.removeItem('jeopardy_roomcode');
+
+      setIsSubmitted(false);
+      setRoomCode('');
     });
 
     return () => {
       socket.off('room_created');
-      socket.off('error');
+      socket.off('room_joined_success');
+      socket.off('error_message');
     };
+  }, []);
+
+  useEffect(() => {
+    const savedRole = sessionStorage.getItem('jeopardy_role');
+    const savedCode = sessionStorage.getItem('jeopardy_roomcode');
+    const savedName = localStorage.getItem('jeopardy_username');
+
+    if (savedRole && savedCode && savedName) {
+      console.log(`Autoreconnect: ${savedCode}`);
+
+      socket.emit('join_room', { id: getOrCreateUserId(), username: savedName, roomCode: savedCode });
+    }
   }, []);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name.trim()) return alert('Введи своє ім’я!');
+    const trimmedName = name.trim();
+    const trimmedCode = roomCode.trim().toUpperCase();
+
+    if (!trimmedName) return alert('Введи своє ім’я!');
+
+    localStorage.setItem('jeopardy_username', trimmedName);
 
     if (role === 'host') {
-      socket.emit('create_room', { username: name.trim() });
+      socket.emit('create_room', { id: userId, username: trimmedName });
     } else {
-      if (!roomCode.trim()) return alert('Введи код кімнати!');
+      if (!trimmedCode) return alert('Введи код кімнати!');
 
-      socket.emit('join_room', { username: name.trim(), roomCode: roomCode.trim().toUpperCase() });
-
-      setIsSubmitted(true);
+      socket.emit('join_room', { id: userId, username: trimmedName, roomCode: trimmedCode });
     }
-
-    localStorage.setItem('jeopardy_username', name.trim());
   };
 
   const handleLeaveRoom = () => {
-    socket.emit('leave_room', { username: name.trim(), roomCode: roomCode.trim().toUpperCase() });
+    socket.emit('leave_room', { id: userId, roomCode });
 
-    setIsSubmitted(false);
+    sessionStorage.removeItem('jeopardy_role');
+    sessionStorage.removeItem('jeopardy_roomcode');
+
     setRoomCode('');
+    setIsSubmitted(false);
   };
 
   if (isSubmitted) {
