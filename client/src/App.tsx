@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Crown, Gamepad2 } from 'lucide-react';
+import { Crown, Gamepad2, Users } from 'lucide-react';
 import { socket } from './socket';
 import { getOrCreateUserId } from './utils/user';
+import type { Player } from '@shared/types';
 
 type UserRole = 'player' | 'host';
 
@@ -22,6 +23,7 @@ function App() {
     const savedName = localStorage.getItem('jeopardy_username');
     return !!(savedRole && savedCode && savedName);
   });
+  const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
     socket.on('room_created', (generatedCode: string) => {
@@ -45,6 +47,11 @@ function App() {
       }
     });
 
+    socket.on('update_players', (serverPlayers: Player[]) => {
+      console.log('Updated player list:', serverPlayers);
+      setPlayers(serverPlayers);
+    });
+
     socket.on('error_message', (message: string) => {
       alert(message);
       sessionStorage.removeItem('jeopardy_role');
@@ -52,11 +59,13 @@ function App() {
 
       setIsSubmitted(false);
       setRoomCode('');
+      setPlayers([]);
     });
 
     return () => {
       socket.off('room_created');
       socket.off('room_joined_success');
+      socket.off('update_players');
       socket.off('error_message');
     };
   }, []);
@@ -92,12 +101,13 @@ function App() {
   };
 
   const handleLeaveRoom = () => {
-    socket.emit('leave_room', { id: userId, roomCode });
+    socket.emit('leave_room', { id: userId, username: name, roomCode: roomCode });
 
     sessionStorage.removeItem('jeopardy_role');
     sessionStorage.removeItem('jeopardy_roomcode');
 
     setRoomCode('');
+    setPlayers([]);
     setIsSubmitted(false);
   };
 
@@ -113,16 +123,61 @@ function App() {
             </span>
           </p>
 
-          <div className="mb-6 rounded-sm bg-brand-input p-4 border border-brand-accent/20">
-            <span className="block text-md uppercase tracking-widest text-gray-400 mb-1">Код кімнати</span>
-            <span className="text-3xl font-mono font-black tracking-widest text-brand-accent">{roomCode}</span>
+          <div className="mb-5 rounded-sm bg-brand-input border border-brand-accent/20 overflow-hidden">
+            <div className="p-4 text-center">
+              <span className="block text-md font-medium uppercase tracking-widest text-gray-400 mb-1">
+                Код кімнати
+              </span>
+              <span className="text-3xl font-mono font-black tracking-widest text-brand-accent">{roomCode}</span>
+            </div>
+
+            <div className="border-t border-white/10">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
+                <Users className="w-5 h-5 text-brand-accent" />
+                <span className="text-md font-semibold uppercase tracking-wider text-gray-300">
+                  Гравці ({players.length})
+                </span>
+              </div>
+
+              <div className="px-4 py-3 max-h-48 overflow-y-auto">
+                {players.length === 0 ? (
+                  <p className="text-gray-500 italic text-center py-2">Очікування гравців…</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {players.map((player, index) => (
+                      <li
+                        key={player.id}
+                        className="flex items-center gap-3 rounded-sm bg-brand-bg/40 px-3 py-2 border border-white/5"
+                      >
+                        <span className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-primary/20 text-brand-accent text-sm font-bold">
+                          {index + 1}
+                        </span>
+                        <span className="text-lg text-white font-medium truncate">{player.username}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
           </div>
+
+          {role === 'host' && (
+            <button
+              onClick={() => {
+                /* TODO: start game logic */
+              }}
+              disabled={players.length < 2}
+              className="w-full rounded-sm mt-3 mb-3 bg-brand-primary py-3 text-2xl font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+            >
+              Розпочати гру
+            </button>
+          )}
 
           <button
             onClick={handleLeaveRoom}
-            className="w-full rounded-sm mt-3 bg-red-600/10 border border-red-500/30 py-3 text-xl font-bold text-red-400 hover:bg-red-600/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+            className="w-full rounded-sm bg-red-600/10 border border-red-500/30 py-3 text-xl font-bold uppercase text-red-400 hover:bg-red-600/20 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
           >
-            ВИЙТИ З КІМНАТИ
+            Вийти з кімнати
           </button>
         </div>
       </div>
@@ -148,6 +203,7 @@ function App() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Наприклад, Владислав"
+            maxLength={12}
             className="w-full rounded-sm bg-brand-input px-4 py-3 text-white placeholder-gray-500 outline-none border border-white/5 focus:border-brand-accent transition-all duration-200"
           />
         </div>
@@ -216,9 +272,9 @@ function App() {
             <button
               type="button"
               // onClick={() => setIsConfiguring(true)}
-              className="w-full h-14 rounded-sm bg-brand-input px-4 text-xl text-center font-bold text-brand-accent border border-brand-accent/20 hover:bg-brand-input/80 hover:border-brand-accent hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
+              className="w-full h-14 rounded-sm bg-brand-input px-4 text-xl text-center font-bold uppercase text-brand-accent border border-brand-accent/20 hover:bg-brand-input/80 hover:border-brand-accent hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              НАЛАШТУВАТИ ПРЕСЕТ
+              Налаштувати пресет
             </button>
           </div>
         </div>

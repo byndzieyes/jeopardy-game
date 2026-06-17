@@ -58,6 +58,7 @@ io.on('connection', (socket) => {
       console.log(`Host ${username} successfully reconnected to the room ${roomCode}!`);
 
       socket.join(roomCode);
+      socket.emit('update_players', rooms[roomCode].players);
 
       return;
     }
@@ -103,6 +104,9 @@ io.on('connection', (socket) => {
     if (rooms[roomCode].host.id === id) {
       console.log(`Host ${rooms[roomCode].host.username} closed room ${roomCode}.`);
 
+      rooms[roomCode].players = [];
+
+      io.to(roomCode).emit('update_players', rooms[roomCode].players);
       io.to(roomCode).emit('error_message', 'Хост закрив кімнату.');
 
       io.in(roomCode).socketsLeave(roomCode);
@@ -134,7 +138,11 @@ io.on('connection', (socket) => {
           if (rooms[roomCode] && rooms[roomCode].host.socketId === socket.id) {
             console.log(`Room host ${roomCode} lost connection. Nullifying game.`);
 
+            rooms[roomCode].players = [];
+
+            io.to(roomCode).emit('update_players', rooms[roomCode].players);
             io.to(roomCode).emit('error_message', "Хост залишив гру через проблеми зі зв'язком.");
+
             io.in(roomCode).socketsLeave(roomCode);
 
             delete rooms[roomCode];
