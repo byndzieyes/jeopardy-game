@@ -3,6 +3,7 @@ export interface Player {
   socketId: string;
   username: string;
   score?: number;
+  isConnected: boolean;
 }
 
 export interface Room {

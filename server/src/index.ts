@@ -32,6 +32,7 @@ io.on('connection', (socket) => {
       id,
       socketId: socket.id,
       username,
+      isConnected: true,
     };
 
     rooms[roomCode] = {
@@ -54,6 +55,7 @@ io.on('connection', (socket) => {
 
     if (rooms[roomCode].host.id === id) {
       rooms[roomCode].host.socketId = socket.id;
+      rooms[roomCode].host.isConnected = true;
 
       console.log(`Host ${username} successfully reconnected to the room ${roomCode}!`);
 
@@ -67,6 +69,7 @@ io.on('connection', (socket) => {
 
     if (existingPlayer) {
       existingPlayer.socketId = socket.id;
+      existingPlayer.isConnected = true;
       console.log(
         `Player ${username} reconnected. Game status: ${rooms[roomCode].isActive ? 'In progress' : 'In lobby'}`,
       );
@@ -80,6 +83,7 @@ io.on('connection', (socket) => {
         socketId: socket.id,
         username,
         score: 0,
+        isConnected: true,
       };
 
       rooms[roomCode].players.push(newPlayer);
@@ -133,14 +137,16 @@ io.on('connection', (socket) => {
 
       if (room.host.socketId === socket.id) {
         console.log(`Room host ${roomCode} lost connection. Waiting 10 seconds...`);
+        room.host.isConnected = false;
 
         setTimeout(() => {
-          if (rooms[roomCode] && rooms[roomCode].host.socketId === socket.id) {
+          const room = rooms[roomCode];
+          if (room && room.host.socketId === socket.id) {
             console.log(`Room host ${roomCode} lost connection. Nullifying game.`);
 
-            rooms[roomCode].players = [];
+            room.players = [];
 
-            io.to(roomCode).emit('update_players', rooms[roomCode].players);
+            io.to(roomCode).emit('update_players', room.players);
             io.to(roomCode).emit('error_message', "Хост залишив гру через проблеми зі зв'язком.");
 
             io.in(roomCode).socketsLeave(roomCode);
@@ -158,19 +164,23 @@ io.on('connection', (socket) => {
         const disconnectedPlayer = room.players[playerIndex];
 
         if (disconnectedPlayer) {
+          disconnectedPlayer.isConnected = false;
           console.log(`Player ${disconnectedPlayer.username} lost connection. Waiting for reconnection...`);
 
+          io.to(roomCode).emit('update_players', room.players);
+
           setTimeout(() => {
-            if (rooms[roomCode]) {
-              const currentPlayer = rooms[roomCode].players.find((p) => p.id === disconnectedPlayer.id);
+            const room = rooms[roomCode];
+            if (room) {
+              const currentPlayer = room.players.find((p) => p.id === disconnectedPlayer.id);
 
               if (currentPlayer && currentPlayer.socketId === socket.id) {
-                if (!rooms[roomCode].isActive) {
-                  rooms[roomCode].players = rooms[roomCode].players.filter((p) => p.id !== disconnectedPlayer.id);
+                if (!room.isActive) {
+                  room.players = room.players.filter((p) => p.id !== disconnectedPlayer.id);
 
                   console.log(`Player ${disconnectedPlayer.username} did not reconnect. Deleted.`);
 
-                  io.to(roomCode).emit('update_players', rooms[roomCode].players);
+                  io.to(roomCode).emit('update_players', room.players);
                 } else {
                   console.log(`Player ${disconnectedPlayer.username} is offline, but the game is still in progress.`);
                 }

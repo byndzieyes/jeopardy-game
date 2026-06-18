@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Crown, Gamepad2, Users } from 'lucide-react';
+import { AlertTriangle, Crown, Gamepad2, Users } from 'lucide-react';
 import { socket } from './socket';
 import { getOrCreateUserId } from './utils/user';
 import type { Player } from '@shared/types';
@@ -174,12 +174,14 @@ function App() {
                     {players.map((player, index) => (
                       <li
                         key={player.id}
-                        className="flex items-center gap-3 rounded-sm bg-brand-bg/40 px-3 py-2 border border-white/5"
+                        className={`flex items-center gap-3 rounded-sm bg-brand-bg/40 px-3 py-2 border border-white/5${!player.isConnected ? ' opacity-50' : ''}`}
+                        title={!player.isConnected ? "Проблеми зі зв'язком. Очікування реконекту гравця..." : undefined}
                       >
                         <span className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-primary/20 text-brand-accent text-sm font-bold">
                           {index + 1}
                         </span>
                         <span className="text-lg text-white font-medium truncate">{player.username}</span>
+                        {!player.isConnected && <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 ml-auto" />}
                       </li>
                     ))}
                   </ul>
