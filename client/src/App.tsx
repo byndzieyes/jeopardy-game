@@ -141,7 +141,7 @@ function App() {
   if (isSubmitted) {
     return (
       <div className="flex h-screen items-center justify-center bg-brand-bg text-white p-4 font-sans">
-        <div className="w-full max-w-md rounded-sm bg-brand-surface p-8 text-center shadow-2xl border border-white/5">
+        <div className="w-full max-w-md rounded-sm bg-brand-surface p-8 text-center shadow-2xl border border-white/5 animate-fade-in">
           <h2 className="text-5xl font-bold mb-8 text-brand-accent">Вітаємо, {name}!</h2>
           <p className="text-gray-300 mb-3 text-xl">
             Ти увійшов як:{' '}
