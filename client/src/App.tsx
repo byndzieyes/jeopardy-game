@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Crown, Gamepad2, Users } from 'lucide-react';
 import { socket } from './socket';
 import { getOrCreateUserId } from './utils/user';
@@ -24,6 +24,9 @@ function App() {
     return !!(savedRole && savedCode && savedName);
   });
   const [players, setPlayers] = useState<Player[]>([]);
+  const prevPlayerCountRef = useRef(0);
+  const joinSoundRef = useRef<HTMLAudioElement | null>(null);
+  const leaveSoundRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     socket.on('room_created', (generatedCode: string) => {
@@ -49,6 +52,29 @@ function App() {
 
     socket.on('update_players', (serverPlayers: Player[]) => {
       console.log('Updated player list:', serverPlayers);
+      console.log(`prev: ${prevPlayerCountRef.current}, new: ${serverPlayers.length}`);
+
+      if (serverPlayers.length > prevPlayerCountRef.current) {
+        if (!joinSoundRef.current) {
+          joinSoundRef.current = new Audio('/sounds/join_room.mp3');
+        }
+        joinSoundRef.current.currentTime = 0;
+        joinSoundRef.current.volume = 0.4;
+        joinSoundRef.current.play().catch((error) => {
+          console.warn('Browser blocked autoplay:', error);
+        });
+      } else if (serverPlayers.length < prevPlayerCountRef.current && prevPlayerCountRef.current > 0) {
+        if (!leaveSoundRef.current) {
+          leaveSoundRef.current = new Audio('/sounds/leave_room.mp3');
+        }
+        leaveSoundRef.current.currentTime = 0;
+        leaveSoundRef.current.volume = 0.4;
+        leaveSoundRef.current.play().catch((error) => {
+          console.warn('Browser blocked autoplay:', error);
+        });
+      }
+
+      prevPlayerCountRef.current = serverPlayers.length;
       setPlayers(serverPlayers);
     });
 
@@ -60,6 +86,7 @@ function App() {
       setIsSubmitted(false);
       setRoomCode('');
       setPlayers([]);
+      prevPlayerCountRef.current = 0;
     });
 
     return () => {

@@ -119,8 +119,8 @@ io.on('connection', (socket) => {
 
     console.log(`User ${username} left room: ${roomCode}`);
 
-    socket.leave(roomCode);
     io.to(roomCode).emit('update_players', rooms[roomCode].players);
+    socket.leave(roomCode);
   });
 
   socket.on('disconnect', () => {
