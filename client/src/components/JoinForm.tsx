@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Gamepad2, Crown } from 'lucide-react';
+import { toast } from 'sonner';
 
 export type UserRole = 'player' | 'host';
 
@@ -21,12 +22,12 @@ export function JoinForm({ initialName, initialRole, initialRoomCode, onSubmit }
     const trimmedCode = roomCode.trim().toUpperCase();
 
     if (!trimmedName) {
-      alert('Введи своє ім’я!');
+      toast.warning('Введи своє ім’я!');
       return;
     }
 
     if (role === 'player' && !trimmedCode) {
-      alert('Введи код кімнати!');
+      toast.warning('Введи код кімнати!');
       return;
     }
 

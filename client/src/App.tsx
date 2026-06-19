@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Toaster, toast } from 'sonner';
 import { socket } from './socket';
 import { getOrCreateUserId } from './utils/user';
 import type { Player } from '@shared/types';
@@ -78,7 +79,7 @@ function App() {
     });
 
     socket.on('error_message', (message: string) => {
-      alert(message);
+      toast.error(message);
       sessionStorage.removeItem('jeopardy_role');
       sessionStorage.removeItem('jeopardy_roomcode');
 
@@ -133,11 +134,30 @@ function App() {
     setIsInRoom(false);
   };
 
-  if (isInRoom) {
-    return <Lobby name={name} role={role} roomCode={roomCode} players={players} onLeave={handleLeaveRoom} />;
-  }
-
-  return <JoinForm initialName={name} initialRole={role} initialRoomCode={roomCode} onSubmit={handleJoinSubmit} />;
+  return (
+    <>
+      <Toaster
+        theme="dark"
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#091048',
+            borderColor: 'rgba(254, 198, 114, 0.2)',
+            color: '#ffffff',
+            fontFamily: 'var(--font-sans)',
+            borderRadius: '4px',
+            padding: '16px 20px',
+            fontSize: '18px',
+          },
+        }}
+      />
+      {isInRoom ? (
+        <Lobby name={name} role={role} roomCode={roomCode} players={players} onLeave={handleLeaveRoom} />
+      ) : (
+        <JoinForm initialName={name} initialRole={role} initialRoomCode={roomCode} onSubmit={handleJoinSubmit} />
+      )}
+    </>
+  );
 }
 
 export default App;
