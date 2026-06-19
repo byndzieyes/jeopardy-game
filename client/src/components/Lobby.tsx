@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AlertTriangle, Users } from 'lucide-react';
 import type { Player } from '@shared/types';
 import type { UserRole } from './JoinForm';
@@ -11,6 +12,18 @@ interface LobbyProps {
 }
 
 export function Lobby({ name, role, roomCode, players, onLeave }: LobbyProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error('Failed to copy room code:', err);
+    }
+  };
+
   return (
     <div className="flex h-screen items-center justify-center bg-brand-bg text-white p-4 font-sans">
       <div className="w-full max-w-md rounded-sm bg-brand-surface p-8 text-center shadow-2xl border border-white/5 animate-fade-in">
@@ -23,10 +36,31 @@ export function Lobby({ name, role, roomCode, players, onLeave }: LobbyProps) {
         </p>
 
         <div className="mb-5 rounded-sm bg-brand-input border border-brand-accent/20 overflow-hidden">
-          <div className="p-4 text-center">
-            <span className="block text-md font-medium uppercase tracking-widest text-gray-400 mb-1">
-              Код кімнати
-            </span>
+          <div
+            onClick={handleCopy}
+            className="p-4 text-center cursor-pointer hover:bg-white/5 active:bg-brand-input/60 transition-all duration-200 relative group select-none"
+            title="Натисни, щоб скопіювати"
+          >
+            <div className="relative h-6 mb-2 overflow-hidden">
+              <span
+                className={`absolute left-0 right-0 top-0 text-md font-medium uppercase tracking-widest transition-all duration-300 ${
+                  copied
+                    ? 'opacity-0 -translate-y-2 pointer-events-none'
+                    : 'opacity-100 translate-y-0 text-gray-400 group-hover:text-brand-accent'
+                }`}
+              >
+                Код кімнати
+              </span>
+              <span
+                className={`absolute left-0 right-0 top-0 text-md font-bold uppercase tracking-widest transition-all duration-300 text-green-400 ${
+                  copied
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-2 pointer-events-none'
+                }`}
+              >
+                Скопійовано!
+              </span>
+            </div>
             <span className="text-3xl font-mono font-black tracking-widest text-brand-accent">{roomCode}</span>
           </div>
 
