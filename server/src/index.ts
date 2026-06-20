@@ -2,7 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { generateRoomCode } from './utils/room.js';
-import type { Player, RoomsState, Preset } from '@shared/types.js';
+import type { Player, RoomsState, Preset } from '@shared/types';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,7 +11,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || ['http://localhost:5173', 'http://localhost:4173'],
+    origin: process.env.CLIENT_URL || '*',
     methods: ['GET', 'POST'],
   },
 });
