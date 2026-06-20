@@ -24,7 +24,7 @@ interface EditBoardProps {
 
 type GameBoardProps = PlayBoardProps | EditBoardProps;
 
-export function GameBoard({ isEditing, onClose, initialPreset, onSave, onCellClick, isHost = false }: GameBoardProps) {
+export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellClick, isHost = false }: GameBoardProps) {
   const [localPreset, setLocalPreset] = useState<Preset>(() => {
     if (initialPreset && initialPreset.categories && initialPreset.categories.length > 0) {
       return structuredClone(initialPreset);
@@ -104,18 +104,27 @@ export function GameBoard({ isEditing, onClose, initialPreset, onSave, onCellCli
 
   const boardContent = (
     <div className={`grid grid-cols-5 gap-1.5 ${isEditing ? 'flex-1 overflow-y-auto px-2 py-4 bg-brand-bg' : ''}`}>
-      {categories.map((cat, catIdx) => (
-        <CategoryHeader
-          key={cat.id}
-          name={cat.name}
-          catIndex={catIdx}
-          isEditing={isEditing}
-          isEditingActive={isEditing && editingCatIndex === catIdx}
-          onStartEdit={() => setEditingCatIndex(catIdx)}
-          onEndEdit={() => setEditingCatIndex(null)}
-          onRename={handleCategoryRename}
-        />
-      ))}
+      {categories.map((cat, catIdx) =>
+        isEditing ? (
+          <CategoryHeader
+            key={cat.id}
+            name={cat.name}
+            catIndex={catIdx}
+            isEditing={true}
+            isEditingActive={editingCatIndex === catIdx}
+            onStartEdit={() => setEditingCatIndex(catIdx)}
+            onEndEdit={() => setEditingCatIndex(null)}
+            onRename={handleCategoryRename}
+          />
+        ) : (
+          <CategoryHeader
+            key={cat.id}
+            name={cat.name}
+            catIndex={catIdx}
+            isEditing={false}
+          />
+        )
+      )}
 
       {[0, 1, 2, 3, 4].map((rowIdx) => (
         <React.Fragment key={rowIdx}>
@@ -144,8 +153,14 @@ export function GameBoard({ isEditing, onClose, initialPreset, onSave, onCellCli
 
   if (isEditing) {
     return (
-      <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fade-in">
-        <div className="w-full max-w-6xl max-h-[90vh] bg-brand-bg border border-white/5 rounded-sm shadow-2xl flex flex-col overflow-hidden">
+      <div
+        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fade-in"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-6xl max-h-[90vh] bg-brand-bg border border-white/5 rounded-sm shadow-2xl flex flex-col overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
           <header className="p-5 flex items-center justify-between bg-brand-surface">
             <h2 className="text-2xl font-black text-brand-accent uppercase tracking-wider">
               Налаштування ігрового табло
@@ -180,8 +195,17 @@ export function GameBoard({ isEditing, onClose, initialPreset, onSave, onCellCli
         </div>
 
         {activeQuestion && draftQuestion && (
-          <div className="fixed inset-0 z-60 bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="w-full max-w-lg bg-brand-surface border border-white/5 p-6 rounded-sm shadow-2xl flex flex-col gap-4 animate-fade-in text-left">
+          <div
+            className="fixed inset-0 z-60 bg-black/50 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveQuestion(null);
+            }}
+          >
+            <div
+              className="w-full max-w-lg bg-brand-surface border border-white/5 p-6 rounded-sm shadow-2xl flex flex-col gap-4 animate-fade-in text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
               <h3 className="text-2xl font-black text-brand-accent uppercase tracking-wider">Налаштування питання</h3>
 
               <p className="text-lg text-white font-bold border-b border-white/5 pb-2">

@@ -18,7 +18,7 @@ const TOAST_OPTIONS = {
   },
 };
 
-const playSound = (ref: React.MutableRefObject<HTMLAudioElement | null>, path: string) => {
+const playSound = (ref: React.RefObject<HTMLAudioElement | null>, path: string) => {
   if (!ref.current) {
     ref.current = new Audio(path);
   }
@@ -117,7 +117,7 @@ function App() {
     submittedName: string,
     submittedRole: UserRole,
     submittedRoomCode: string,
-    submittedPreset: Preset
+    submittedPreset: Preset,
   ) => {
     setName(submittedName);
     setRole(submittedRole);
@@ -145,11 +145,7 @@ function App() {
 
   return (
     <>
-      <Toaster
-        theme="dark"
-        position="top-center"
-        toastOptions={TOAST_OPTIONS}
-      />
+      <Toaster theme="dark" position="top-center" toastOptions={TOAST_OPTIONS} />
       {isInRoom ? (
         <Lobby name={name} role={role} roomCode={roomCode} players={players} onLeave={handleLeaveRoom} />
       ) : (
