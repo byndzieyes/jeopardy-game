@@ -2,9 +2,32 @@ import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import { socket } from './socket';
 import { getOrCreateUserId } from './utils/user';
-import type { Player } from '@shared/types';
+import type { Player, Preset } from '@shared/types';
 import { JoinForm, type UserRole } from './components/JoinForm';
 import { Lobby } from './components/Lobby';
+
+const TOAST_OPTIONS = {
+  style: {
+    background: '#091048',
+    borderColor: 'rgba(254, 198, 114, 0.2)',
+    color: '#ffffff',
+    fontFamily: 'var(--font-sans)',
+    borderRadius: '4px',
+    padding: '16px 20px',
+    fontSize: '18px',
+  },
+};
+
+const playSound = (ref: React.MutableRefObject<HTMLAudioElement | null>, path: string) => {
+  if (!ref.current) {
+    ref.current = new Audio(path);
+  }
+  ref.current.currentTime = 0;
+  ref.current.volume = 0.4;
+  ref.current.play().catch((error) => {
+    console.warn('Browser blocked autoplay:', error);
+  });
+};
 
 function App() {
   const [userId] = useState<string>(() => getOrCreateUserId());
@@ -24,7 +47,7 @@ function App() {
     return !!(savedRole && savedCode && savedName);
   });
   const [players, setPlayers] = useState<Player[]>([]);
-  const prevPlayerCountRef = useRef(0);
+  const prevPlayerCountRef = useRef(-1);
   const joinSoundRef = useRef<HTMLAudioElement | null>(null);
   const leaveSoundRef = useRef<HTMLAudioElement | null>(null);
 
@@ -37,41 +60,22 @@ function App() {
       sessionStorage.setItem('jeopardy_roomcode', generatedCode);
     });
 
-    socket.on('room_joined_success', ({ isActive, roomCode: serverCode, role: serverRole }) => {
-      console.log(`Successfully joined room ${serverCode} as ${serverRole}. Game active: ${isActive}`);
-
+    socket.on('room_joined_success', ({ roomCode: serverCode, role: serverRole }) => {
       setIsInRoom(true);
+      setRole(serverRole as UserRole);
+      setRoomCode(serverCode);
 
       sessionStorage.setItem('jeopardy_role', serverRole);
       sessionStorage.setItem('jeopardy_roomcode', serverCode);
-
-      if (isActive) {
-        // setIsGameStarted(true);
-      }
     });
 
     socket.on('update_players', (serverPlayers: Player[]) => {
-      console.log('Updated player list:', serverPlayers);
-      console.log(`prev: ${prevPlayerCountRef.current}, new: ${serverPlayers.length}`);
-
-      if (serverPlayers.length > prevPlayerCountRef.current) {
-        if (!joinSoundRef.current) {
-          joinSoundRef.current = new Audio('/sounds/join_room.mp3');
+      if (prevPlayerCountRef.current !== -1) {
+        if (serverPlayers.length > prevPlayerCountRef.current) {
+          playSound(joinSoundRef, '/sounds/join_room.mp3');
+        } else if (serverPlayers.length < prevPlayerCountRef.current) {
+          playSound(leaveSoundRef, '/sounds/leave_room.mp3');
         }
-        joinSoundRef.current.currentTime = 0;
-        joinSoundRef.current.volume = 0.4;
-        joinSoundRef.current.play().catch((error) => {
-          console.warn('Browser blocked autoplay:', error);
-        });
-      } else if (serverPlayers.length < prevPlayerCountRef.current && prevPlayerCountRef.current > 0) {
-        if (!leaveSoundRef.current) {
-          leaveSoundRef.current = new Audio('/sounds/leave_room.mp3');
-        }
-        leaveSoundRef.current.currentTime = 0;
-        leaveSoundRef.current.volume = 0.4;
-        leaveSoundRef.current.play().catch((error) => {
-          console.warn('Browser blocked autoplay:', error);
-        });
       }
 
       prevPlayerCountRef.current = serverPlayers.length;
@@ -86,7 +90,7 @@ function App() {
       setIsInRoom(false);
       setRoomCode('');
       setPlayers([]);
-      prevPlayerCountRef.current = 0;
+      prevPlayerCountRef.current = -1;
     });
 
     return () => {
@@ -109,7 +113,12 @@ function App() {
     }
   }, []);
 
-  const handleJoinSubmit = (submittedName: string, submittedRole: UserRole, submittedRoomCode: string) => {
+  const handleJoinSubmit = (
+    submittedName: string,
+    submittedRole: UserRole,
+    submittedRoomCode: string,
+    submittedPreset: Preset
+  ) => {
     setName(submittedName);
     setRole(submittedRole);
     setRoomCode(submittedRoomCode);
@@ -117,7 +126,7 @@ function App() {
     localStorage.setItem('jeopardy_username', submittedName);
 
     if (submittedRole === 'host') {
-      socket.emit('create_room', { id: userId, username: submittedName });
+      socket.emit('create_room', { id: userId, username: submittedName, preset: submittedPreset });
     } else {
       socket.emit('join_room', { id: userId, username: submittedName, roomCode: submittedRoomCode });
     }
@@ -139,17 +148,7 @@ function App() {
       <Toaster
         theme="dark"
         position="top-center"
-        toastOptions={{
-          style: {
-            background: '#091048',
-            borderColor: 'rgba(254, 198, 114, 0.2)',
-            color: '#ffffff',
-            fontFamily: 'var(--font-sans)',
-            borderRadius: '4px',
-            padding: '16px 20px',
-            fontSize: '18px',
-          },
-        }}
+        toastOptions={TOAST_OPTIONS}
       />
       {isInRoom ? (
         <Lobby name={name} role={role} roomCode={roomCode} players={players} onLeave={handleLeaveRoom} />

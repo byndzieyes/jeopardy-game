@@ -2,7 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { generateRoomCode } from './utils/room.js';
-import type { Player, RoomsState } from '@shared/types.js';
+import type { Player, RoomsState, Preset } from '@shared/types.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,7 +16,7 @@ const io = new Server(httpServer, {
   },
 });
 
-type CreateRoomPayload = Pick<Player, 'id' | 'username'>;
+type CreateRoomPayload = Pick<Player, 'id' | 'username'> & { preset: Preset };
 type JoinRoomPayload = Pick<Player, 'id' | 'username'> & { roomCode: string };
 type LeaveRoomPayload = Pick<Player, 'id' | 'username'> & { roomCode: string };
 
@@ -25,8 +25,11 @@ const rooms: RoomsState = {};
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  socket.on('create_room', ({ id, username }: CreateRoomPayload) => {
-    const roomCode = generateRoomCode();
+  socket.on('create_room', ({ id, username, preset }: CreateRoomPayload) => {
+    let roomCode = generateRoomCode();
+    while (rooms[roomCode]) {
+      roomCode = generateRoomCode();
+    }
 
     const hostPlayer: Player = {
       id,
@@ -39,10 +42,11 @@ io.on('connection', (socket) => {
       host: hostPlayer,
       players: [],
       isActive: false,
+      preset: preset,
     };
 
     socket.join(roomCode);
-    console.log(`Host ${username} created room: ${roomCode}`);
+    console.log(`Host ${username} created room: ${roomCode} with preset: ${!!preset}`);
     socket.emit('room_created', roomCode);
   });
 
@@ -61,6 +65,7 @@ io.on('connection', (socket) => {
 
       socket.join(roomCode);
       socket.emit('update_players', rooms[roomCode].players);
+      socket.emit('room_joined_success', { isActive: rooms[roomCode].isActive, roomCode, role: 'host' });
 
       return;
     }

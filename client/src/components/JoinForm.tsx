@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Gamepad2, Crown } from 'lucide-react';
 import { toast } from 'sonner';
+import { GameBoard } from './GameBoard';
+import type { Preset } from '@shared/types';
 
 export type UserRole = 'player' | 'host';
 
@@ -8,13 +10,15 @@ interface JoinFormProps {
   initialName: string;
   initialRole: UserRole;
   initialRoomCode: string;
-  onSubmit: (name: string, role: UserRole, roomCode: string) => void;
+  onSubmit: (name: string, role: UserRole, roomCode: string, preset: Preset) => void;
 }
 
 export function JoinForm({ initialName, initialRole, initialRoomCode, onSubmit }: JoinFormProps) {
   const [name, setName] = useState<string>(initialName);
   const [role, setRole] = useState<UserRole>(initialRole);
   const [roomCode, setRoomCode] = useState<string>(initialRoomCode);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [preset, setPreset] = useState<Preset>({ categories: [] });
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,12 +30,19 @@ export function JoinForm({ initialName, initialRole, initialRoomCode, onSubmit }
       return;
     }
 
-    if (role === 'player' && !trimmedCode) {
-      toast.warning('Введи код кімнати!');
-      return;
+    if (role === 'player') {
+      if (!trimmedCode) {
+        toast.warning('Введи код кімнати!');
+        return;
+      }
+    } else {
+      if (preset.categories.length === 0) {
+        toast.warning('Налаштуй ігрове табло перед створенням кімнати!');
+        return;
+      }
     }
 
-    onSubmit(trimmedName, role, trimmedCode);
+    onSubmit(trimmedName, role, trimmedCode, preset);
   };
 
   return (
@@ -139,33 +150,35 @@ export function JoinForm({ initialName, initialRole, initialRoomCode, onSubmit }
             <button
               id="preset-btn"
               type="button"
+              onClick={() => setIsEditorOpen(true)}
               className="w-full h-14 rounded-sm bg-brand-input px-4 text-xl text-center font-bold uppercase text-brand-accent border border-brand-accent/20 hover:bg-brand-input/80 hover:border-brand-accent hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              Налаштувати пресет
+              {preset.categories.length > 0 ? 'Пресет налаштовано' : 'Налаштувати пресет'}
             </button>
           </div>
         </div>
 
-        <div className="relative h-16 mt-8">
+        <div className="mt-8">
           <button
             type="submit"
-            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
-              role === 'player' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-            }`}
+            className="w-full h-16 rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
           >
-            Приєднатися до гри
-          </button>
-
-          <button
-            type="submit"
-            className={`absolute inset-0 w-full h-full rounded-sm bg-brand-primary text-2xl text-center font-black uppercase tracking-wider text-white shadow-lg shadow-black/30 hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
-              role === 'host' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            Створити кімнату
+            {role === 'host' ? 'Створити кімнату' : 'Приєднатися до гри'}
           </button>
         </div>
       </form>
+
+      {isEditorOpen && (
+        <GameBoard
+          isEditing={true}
+          onClose={() => setIsEditorOpen(false)}
+          initialPreset={preset}
+          onSave={(updatedPreset) => {
+            setPreset(updatedPreset);
+            toast.success('Налаштування ігрового табло успішно збережено!');
+          }}
+        />
+      )}
     </div>
   );
 }
