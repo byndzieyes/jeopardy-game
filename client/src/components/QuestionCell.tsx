@@ -1,13 +1,23 @@
 import type { Question } from '@shared/types';
 
-interface QuestionCellProps {
+interface QuestionCellBaseProps {
   question: Question;
-  isEditing: boolean;
-  isHost: boolean;
   onClick: () => void;
 }
 
-export function QuestionCell({ question, isEditing, isHost, onClick }: QuestionCellProps) {
+interface PlayQuestionCellProps extends QuestionCellBaseProps {
+  isEditing: false;
+  isHost: boolean;
+}
+
+interface EditQuestionCellProps extends QuestionCellBaseProps {
+  isEditing: true;
+  isHost?: never;
+}
+
+type QuestionCellProps = PlayQuestionCellProps | EditQuestionCellProps;
+
+export function QuestionCell({ isEditing, question, isHost, onClick }: QuestionCellProps) {
   const isAnswered = !!question.isAnswered;
 
   if (isEditing) {
@@ -34,12 +44,19 @@ export function QuestionCell({ question, isEditing, isHost, onClick }: QuestionC
     );
   }
 
+  if (!isHost) {
+    return (
+      <div className="w-full rounded-sm py-5 bg-brand-surface border-2 border-brand-accent/20 text-center text-3xl font-black tracking-wider text-brand-accent transition-all duration-200 ease-in-out">
+        ${question.value}
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"
-      disabled={!isHost}
       onClick={onClick}
-      className="w-full rounded-sm py-5 bg-brand-surface border-2 border-brand-accent/20 text-center text-3xl font-black tracking-wider text-brand-accent transition-all duration-200 ease-in-out cursor-pointer hover:border-brand-accent/50 hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-sm py-5 bg-brand-surface border-2 border-brand-accent/20 text-center text-3xl font-black tracking-wider text-brand-accent transition-all duration-200 ease-in-out cursor-pointer hover:border-brand-accent/50 hover:brightness-125"
     >
       ${question.value}
     </button>

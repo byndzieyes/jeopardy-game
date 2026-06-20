@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { getDefaultPreset } from '../utils/defaultPreset';
 import type { Preset } from '@shared/types';
 import { CategoryHeader } from './CategoryHeader';
@@ -104,49 +104,45 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
 
   const boardContent = (
     <div className={`grid grid-cols-5 gap-1.5 ${isEditing ? 'flex-1 overflow-y-auto px-2 py-4 bg-brand-bg' : ''}`}>
-      {categories.map((cat, catIdx) =>
-        isEditing ? (
-          <CategoryHeader
-            key={cat.id}
-            name={cat.name}
-            catIndex={catIdx}
-            isEditing={true}
-            isEditingActive={editingCatIndex === catIdx}
-            onStartEdit={() => setEditingCatIndex(catIdx)}
-            onEndEdit={() => setEditingCatIndex(null)}
-            onRename={handleCategoryRename}
-          />
-        ) : (
-          <CategoryHeader
-            key={cat.id}
-            name={cat.name}
-            catIndex={catIdx}
-            isEditing={false}
-          />
-        )
-      )}
+      {categories.map((cat, catIdx) => (
+        <div key={cat.id} className="flex flex-col gap-1.5">
+          {isEditing ? (
+            <CategoryHeader
+              name={cat.name}
+              catIndex={catIdx}
+              isEditing={true}
+              isEditingActive={editingCatIndex === catIdx}
+              onStartEdit={() => setEditingCatIndex(catIdx)}
+              onEndEdit={() => setEditingCatIndex(null)}
+              onRename={handleCategoryRename}
+            />
+          ) : (
+            <CategoryHeader name={cat.name} catIndex={catIdx} isEditing={false} />
+          )}
 
-      {[0, 1, 2, 3, 4].map((rowIdx) => (
-        <React.Fragment key={rowIdx}>
-          {categories.map((cat, catIdx) => {
-            const question = cat.questions[rowIdx];
-            return (
+          {cat.questions.map((question, rowIdx) =>
+            isEditing ? (
               <QuestionCell
                 key={question.id}
                 question={question}
-                isEditing={isEditing}
+                isEditing={true}
+                onClick={() => handleOpenQuestion(catIdx, rowIdx)}
+              />
+            ) : (
+              <QuestionCell
+                key={question.id}
+                question={question}
+                isEditing={false}
                 isHost={isHost}
                 onClick={() => {
-                  if (isEditing) {
-                    handleOpenQuestion(catIdx, rowIdx);
-                  } else if (onCellClick) {
+                  if (onCellClick) {
                     onCellClick(catIdx, rowIdx);
                   }
                 }}
               />
-            );
-          })}
-        </React.Fragment>
+            )
+          )}
+        </div>
       ))}
     </div>
   );
