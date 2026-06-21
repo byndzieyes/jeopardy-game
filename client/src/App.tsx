@@ -13,7 +13,7 @@ const TOAST_OPTIONS = {
     color: '#ffffff',
     fontFamily: 'var(--font-sans)',
     borderRadius: '4px',
-    padding: '16px 20px',
+    padding: '12px 18px',
     fontSize: '18px',
   },
 };

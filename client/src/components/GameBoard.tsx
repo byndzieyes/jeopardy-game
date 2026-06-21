@@ -3,6 +3,7 @@ import { getDefaultPreset } from '../utils/defaultPreset';
 import type { Preset } from '@shared/types';
 import { CategoryHeader } from './CategoryHeader';
 import { QuestionCell } from './QuestionCell';
+import { toast } from 'sonner';
 
 interface PlayBoardProps {
   isEditing: false;
@@ -39,6 +40,7 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
     questionText: string;
     answerText: string;
   } | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleCategoryRename = (catIdx: number, newName: string) => {
     setLocalPreset((prev) => ({
@@ -77,18 +79,10 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
     setDraftQuestion(null);
   };
 
-  const handleResetToDefault = () => {
-    if (
-      window.confirm('Ви впевнені, що хочете скинути всі налаштування поля до стандартних? Ваші зміни буде втрачено.')
-    ) {
-      setLocalPreset(getDefaultPreset());
-    }
-  };
-
   const handleSave = () => {
     for (const cat of localPreset.categories) {
       if (!cat.name.trim()) {
-        alert('Усі категорії повинні мати назву!');
+        toast.error('Усі категорії повинні мати назву!');
         return;
       }
     }
@@ -140,7 +134,7 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
                   }
                 }}
               />
-            )
+            ),
           )}
         </div>
       ))}
@@ -163,8 +157,8 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
             </h2>
             <button
               type="button"
-              onClick={handleResetToDefault}
-              className="px-4 py-2 rounded-sm border border-red-500/30 bg-red-600/10 text-md font-bold uppercase tracking-wider text-red-400 hover:bg-red-600/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
+              onClick={() => setShowResetConfirm(true)}
+              className="px-4 py-2 rounded-sm border border-red-500/30 bg-red-600/10 text-md font-bold uppercase tracking-wider text-red-400 shadow-lg shadow-red-900/20 hover:bg-red-600/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
             >
               Скинути до стандартних
             </button>
@@ -269,6 +263,46 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
               >
                 Зберегти клітинку
               </button>
+            </div>
+          </div>
+        )}
+
+        {showResetConfirm && (
+          <div
+            className="fixed inset-0 z-70 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+            onClick={() => setShowResetConfirm(false)}
+          >
+            <div
+              className="bg-brand-surface border-2 border-red-500/30 rounded-sm shadow-2xl max-w-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <h3 className="text-2xl font-black text-red-400 uppercase tracking-wider mb-3">
+                  Скинути налаштування?
+                </h3>
+                <p className="text-gray-300 text-lg">
+                  Ви впевнені, що хочете скинути всі налаштування до стандартних? Ваші зміни буде незворотно втрачено.
+                </p>
+              </div>
+              <div className="p-6 bg-black/20 flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="px-6 py-3 border border-white/10 text-gray-300 font-bold uppercase tracking-wider hover:bg-white/5 rounded-sm transition-colors cursor-pointer"
+                >
+                  Скасувати
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocalPreset(getDefaultPreset());
+                    setShowResetConfirm(false);
+                  }}
+                  className="px-6 py-3 bg-red-600/20 border border-red-500/50 text-red-400 font-bold uppercase tracking-wider hover:bg-red-600/40 hover:text-red-200 rounded-sm transition-colors shadow-lg shadow-red-900/20 cursor-pointer"
+                >
+                  Так, скинути
+                </button>
+              </div>
             </div>
           </div>
         )}

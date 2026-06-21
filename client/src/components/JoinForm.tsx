@@ -37,7 +37,7 @@ export function JoinForm({ initialName, initialRole, initialRoomCode, onSubmit }
       }
     } else {
       if (preset.categories.length === 0) {
-        toast.warning('Налаштуй ігрове табло перед створенням кімнати!');
+        toast.warning('Налаштуй гру перед створенням кімнати!');
         return;
       }
     }
@@ -175,7 +175,7 @@ export function JoinForm({ initialName, initialRole, initialRoomCode, onSubmit }
           initialPreset={preset}
           onSave={(updatedPreset) => {
             setPreset(updatedPreset);
-            toast.success('Налаштування ігрового табло успішно збережено!');
+            toast.success('Налаштування гри успішно збережено!');
           }}
         />
       )}

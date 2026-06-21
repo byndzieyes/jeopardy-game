@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
     console.log(`Player ${username} wants to join room: ${roomCode}`);
 
     if (!rooms[roomCode]) {
-      return socket.emit('error_message', 'Кімнату не знайдено! Перевір код.');
+      return socket.emit('error_message', 'Кімнату не знайдено! Перевір код');
     }
 
     if (rooms[roomCode].host.id === id) {
@@ -107,7 +107,7 @@ io.on('connection', (socket) => {
 
   socket.on('leave_room', ({ id, username, roomCode }: LeaveRoomPayload) => {
     if (!rooms[roomCode]) {
-      return socket.emit('error_message', 'Кімнату не знайдено! Перевір код.');
+      return socket.emit('error_message', 'Кімнату не знайдено! Перевір код');
     }
 
     if (rooms[roomCode].host.id === id) {
@@ -116,7 +116,7 @@ io.on('connection', (socket) => {
       rooms[roomCode].players = [];
 
       io.to(roomCode).emit('update_players', rooms[roomCode].players);
-      io.to(roomCode).emit('error_message', 'Хост закрив кімнату.');
+      io.to(roomCode).emit('error_message', 'Хост закрив кімнату');
 
       io.in(roomCode).socketsLeave(roomCode);
 
@@ -152,7 +152,7 @@ io.on('connection', (socket) => {
             room.players = [];
 
             io.to(roomCode).emit('update_players', room.players);
-            io.to(roomCode).emit('error_message', "Хост залишив гру через проблеми зі зв'язком.");
+            io.to(roomCode).emit('error_message', "Хост залишив гру через проблеми зі зв'язком");
 
             io.in(roomCode).socketsLeave(roomCode);
 
