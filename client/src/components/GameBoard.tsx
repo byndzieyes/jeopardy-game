@@ -41,6 +41,14 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
     answerText: string;
   } | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose?.();
+    }, 280);
+  };
 
   const handleCategoryRename = (catIdx: number, newName: string) => {
     setLocalPreset((prev) => ({
@@ -89,9 +97,7 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
     if (onSave) {
       onSave(localPreset);
     }
-    if (onClose) {
-      onClose();
-    }
+    handleClose();
   };
 
   const categories = isEditing ? localPreset.categories : initialPreset?.categories || [];
@@ -144,8 +150,10 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
   if (isEditing) {
     return (
       <div
-        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fade-in"
-        onClick={onClose}
+        className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 font-sans ${
+          isClosing ? 'animate-fade-out' : 'animate-fade-in'
+        }`}
+        onClick={handleClose}
       >
         <div
           className="w-full max-w-6xl max-h-[90vh] bg-brand-bg border border-white/5 rounded-sm shadow-2xl flex flex-col overflow-hidden"
@@ -169,7 +177,7 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
           <footer className="p-5 flex justify-end gap-3 bg-brand-surface">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-6 py-3 rounded-sm border border-white/10 text-md font-bold uppercase tracking-wider text-gray-300 hover:bg-white/5 hover:scale-[1.02] active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
             >
               Скасувати
@@ -270,7 +278,10 @@ export function GameBoard({ isEditing, initialPreset, onClose, onSave, onCellCli
         {showResetConfirm && (
           <div
             className="fixed inset-0 z-70 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-            onClick={() => setShowResetConfirm(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowResetConfirm(false);
+            }}
           >
             <div
               className="bg-brand-surface border-2 border-red-500/30 rounded-sm shadow-2xl max-w-lg"
