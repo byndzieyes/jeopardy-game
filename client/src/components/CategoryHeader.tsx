@@ -1,3 +1,5 @@
+import { motion } from 'motion/react';
+
 interface CategoryHeaderBaseProps {
   name: string;
   catIndex: number;
@@ -50,20 +52,26 @@ export function CategoryHeader({
 
   if (isEditing) {
     return (
-      <button
+      <motion.button
         type="button"
+        whileHover={{ 
+          scale: 1.02, 
+          borderColor: 'color-mix(in srgb, var(--color-brand-accent) 50%, transparent)',
+          filter: 'brightness(1.25)'
+        }}
+        whileTap={{ scale: 0.98 }}
         onClick={onStartEdit}
-        className="w-full rounded-sm py-4 px-2 bg-brand-surface border-2 border-brand-accent/20 text-center text-xl font-black uppercase tracking-wider text-white truncate transition-all duration-200 ease-in-out cursor-pointer hover:border-brand-accent/50 hover:brightness-125"
+        className="w-full rounded-sm py-4 px-2 bg-brand-surface border-2 border-brand-accent/20 text-center text-xl font-black uppercase tracking-wider text-white truncate cursor-pointer transition-colors duration-200"
         title="Натисніть, щоб перейменувати"
       >
         {name || 'Без назви'}
-      </button>
+      </motion.button>
     );
   }
 
   return (
     <div
-      className="w-full rounded-sm py-4 px-2 bg-brand-surface border-2 border-brand-accent/20 text-center text-xl font-black uppercase tracking-wider text-white truncate transition-all duration-200 ease-in-out cursor-default"
+      className="w-full rounded-sm py-4 px-2 bg-brand-surface border-2 border-brand-accent/20 text-center text-xl font-black uppercase tracking-wider text-white truncate cursor-default"
     >
       {name || 'Без назви'}
     </div>
